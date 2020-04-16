@@ -7,9 +7,8 @@ root = Tk()
 root.title("Admin")
 root.configure(bg = "black")
 
+#CREATE A DATABASE AND TABLE
 '''
-CREATE A DATABASE AND TABLE
-
 connect = sqlite3.connect('admin.db')
 cursor = connect.cursor()
 
@@ -19,9 +18,7 @@ cursor.execute("""CREATE TABLE admin (adminid INTEGER PRIMARY KEY AUTOINCREMENT,
 
 connect.commit()
 connect.close()
-
 '''
-
 #DB LOGIN
 
 def login():
@@ -112,31 +109,26 @@ def login():
 
         b = a[0]
         c = str(b[0])
-        print(type(c), c)
-
-        #createquery = "CREATE TABLE "+"admin"+c+" (studid integer, pointer integer, name text)"
-        #insertquery = "INSERT INTO "+"admin"+c+"(name, attendance, pointer) VALUES (:name, :attendance, :pointer)"
-        #updatequery =
-        #deletequery
-        #showquery
 
         connect = sqlite3.connect('admin.db')
         cursor = connect.cursor()
 
+        tableexistsquery = "SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' AND name ="+"'admin"+c+"'"
 
-        #cursor.execute(insertquery,{
-        #    'name': 'sohamsnakdnsakn',
-        #    'attendance': 56,
-        #    'pointer': 7.5
-        #})
 
-        #cursor.execute("SELECT * FROM studenttable")
-        #a = cursor.fetchall()
-        #for i in a:
-        #    print(i)
+        cursor.execute(tableexistsquery)
 
-        connect.commit()
-        connect.close()
+        if (cursor.fetchone()[0] != 1):
+
+            connect = sqlite3.connect('admin.db')
+            cursor = connect.cursor()
+
+            createquery = "CREATE TABLE " + "admin" + c + " (studid INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL, rollnumber TEXT NOT NULL, at INTEGER NOT NULL, py INTEGER NOT NULL, cn INTEGER NOT NULL)"
+
+            cursor.execute(createquery)
+
+            connect.commit()
+            connect.close()
 
         nw = Tk()
         nw.title("Welcome")
@@ -145,8 +137,6 @@ def login():
         def star():
 
             global name, rollnumber, m1, m2, m3
-
-
 
             name = Entry(nw, width=30, text="Username")
             rollnumber = Entry(nw, width=30, text="Roll Number")
@@ -181,56 +171,157 @@ def login():
             m2.delete(0, END)
             m3.delete(0, END)
 
-        global operation
+        def added():
+
+            def oka():
+                succwin.destroy()
+
+            succwin = Tk()
+            succwin.title("ADDED")
+            succwin.configure(bg="black")
+
+            if operation == 'add':
+                suclabel = Label(succwin, text="ADDED Successfully ", font=50, padx=10, pady=20,fg="white", bg="black")
+                suclabel.grid(row=1, column=1)
+            else:
+                suclabel = Label(succwin, text="DELETED Successfully ", font=50, padx=10, pady=20,fg="white", bg="black")
+                suclabel.grid(row=1, column=1)
+
+            okbtn = Button(succwin, text='OK', command=oka, padx=20, font=35, bg="green", fg="white")
+            okbtn.grid(row=5, columnspan=3, padx=30)
+
+            spacelabel = Label(succwin, text=" ", fg="white", padx=10, bg="black")
+            spacelabel.grid(row=7, column=0)
 
         def submit():
+
             if operation == 'add':
-                return
-            elif operation == 'update':
-                return
+
+                n = name.get()
+                r = rollnumber.get()
+                ma1 = float(m1.get())
+                ma2 = float(m2.get())
+                ma3 = float(m3.get())
+
+                if (n =="" or r =="" or ma1 =="" or ma2 =="" or ma3 ==""):
+
+                    lLabel = Label(nw, text="Input Values Can't be null", fg="White", bg="black", font=35)
+                    lLabel.grid(row=10, column=60)
+                else:
+
+                    connect = sqlite3.connect('admin.db')
+                    cursor = connect.cursor()
+
+                    insertquery = "INSERT INTO " + "admin" + c + "(name, rollnumber, at, py, cn) VALUES (:name, :rollnumber, :at, :py, :cn)"
+
+                    cursor.execute(insertquery,{
+                        'name': name.get(),
+                        'rollnumber': rollnumber.get(),
+                        'at': m1.get(),
+                        'py': m2.get(),
+                        'cn': m3.get()
+                     })
+
+                    connect.commit()
+                    connect.close()
+                    clear()
+                    added()
+
             elif operation == 'delete':
-                return
-            elif operation == 'showw':
-                return
+
+                n = nameup.get()
+                r = rollnumberup.get()
+
+                if (n =="" or r ==""):
+
+                    lLabel = Label(nw, text="Input Values Can't be null", fg="White", bg="black", font=35)
+                    lLabel.grid(row=10, column=60)
+                else:
+
+                    connect = sqlite3.connect('admin.db')
+                    cursor = connect.cursor()
+
+                    deletequery = "DELETE FROM " + "admin" + c + " WHERE name = (:name) AND rollnumber = (:rollnumber)"
+
+                    cursor.execute(deletequery,{
+                        'name': nameup.get(),
+                        'rollnumber': rollnumberup.get()
+                     })
+
+                    connect.commit()
+                    connect.close()
+                    nameup.delete(0, END)
+                    rollnumberup.delete(0, END)
+                    added()
 
         def add():
             star()
             clear()
 
+            global operation
+
+            nameLabel = Label(nw, text="Enter the Values to add", fg="white", bg="black", font=35, padx = 25)
+            nameLabel.grid(row=0, column=60)
+
             addbtn = Button(nw, text='ADD', command=submit, padx=38, font=35, bg="green", fg="white")
             addbtn.grid(row=6, columnspan=3, padx=100, column=60, pady=7)
             operation = 'add'
 
-        def update():
-            star()
-            clear()
-
-            updatebtn = Button(nw, text='UPDATE', command=submit, padx=23, font=35, bg="green", fg="white")
-            updatebtn.grid(row=6, columnspan=3, padx=30, column=60, pady=7)
-            operation = 'update'
-
         def delete():
             star()
             clear()
+            nw.destroy()
+            global root1, rollnumberup, nameup
 
-            updatebtn = Button(nw, text='DELETE', command=submit, padx=23, font=35, bg="green", fg="white")
-            updatebtn.grid(row=6, columnspan=3, padx=30, column=60, pady=7)
+            root1 = Tk()
+            root1.title("DELETE data")
+            root1.configure(bg = "black")
+
+            nameup = Entry(root1, width=30, text="Username")
+            rollnumberup = Entry(root1, width=30, text="Roll Number")
+
+            nameLabel = Label(root1, text="Name : ", fg="white", bg="black", font=35)
+            nameLabel.grid(row=1, column=59)
+            nameup.grid(row=1, column=60, padx=20, pady=20)
+
+            rollnumberLabel = Label(root1, text="Roll Number : ", fg="white", bg="black", font=35)
+            rollnumberLabel.grid(row=2, column=59)
+            rollnumberup.grid(row=2, column=60, padx=20, pady=20)
+
+            global operation, op
+
             operation = 'delete'
+
+            delbtn = Button(root1, text='DELETE', command=submit, padx=23, font=35, bg="green", fg="white")
+            delbtn.grid(row=6, columnspan=3, padx=30, column=60, pady=7)
+
+            root1.mainloop()
 
         def show():
 
-            star()
-            clear()
+            root1 = Tk()
+            root1.title("DELETE data")
+            root1.configure(bg="black")
 
-            name.destroy()
-            rollnumber.destroy()
-            m1.destroy()
-            m2.destroy()
-            m3.destroy()
+            connect = sqlite3.connect('admin.db')
+            cursor = connect.cursor()
 
-            updatebtn = Button(nw, text='SHOW', command=submit, padx=30, font=35, bg="green", fg="white")
-            updatebtn.grid(row=6, columnspan=3, padx=50, column=60, pady=7)
-            operation = 'show'
+            showquery = "SELECT * FROM admin"+c
+
+            cursor.execute(showquery)
+
+            i = 0
+            for row in cursor:
+
+                querylabel = Label(root1, text=row, padx=20, bg="Black", fg="white", font = 60)
+                querylabel.grid(row=i, column=0, padx=20, pady=20)
+
+                i += 1
+
+            connect.commit()
+            connect.close()
+
+            root1.mainloop()
 
         def logout():
             nw.destroy()
@@ -244,21 +335,14 @@ def login():
         addbtn = Button(nw, text='ADD', command=add, padx=20, font=35, bg="green", fg="white")
         addbtn.grid(row=2, columnspan=10, padx=30, pady=7)
 
-        updatebtn = Button(nw, text='UPDATE', command=update, padx=20, font=35, bg="green", fg="white")
-        updatebtn.grid(row=3, columnspan=10, padx=30, pady=7)
-
         deletebtn = Button(nw, text='DELETE', command=delete, padx=20, font=35, bg="green", fg="white")
-        deletebtn.grid(row=4, columnspan=10, padx=30, pady=7)
+        deletebtn.grid(row=3, columnspan=10, padx=30, pady=7)
 
         showbtn = Button(nw, text='SHOW', command=show, padx=20, font=35, bg="green", fg="white")
-        showbtn.grid(row=5, columnspan=10, padx=30, pady=7)
+        showbtn.grid(row=4, columnspan=10, padx=30, pady=7)
 
         logoutbtn = Button(nw, text='Logout', command=logout, padx=20, font=35, bg="green", fg="white")
         logoutbtn.grid(row=0, columnspan=10,column = 100, padx=10, pady=7)
-
-
-        #mylabel = Label(nw, text="Add", font=90, padx=60, pady=20, fg="white", bg="black")
-        #mylabel.grid(row=0, columnspan=3, column=1)
 
         nw.mainloop()
 
@@ -301,9 +385,9 @@ def signup():
 
         v = (username.get()).lower()
         u = (paaswo.get()).lower()
+
         for i in ans:
             str = ''.join(i)
-
             if(v == "" or u ==""):
                 mylabel = Label(signuproot, text="Input values can't be NULL", font=50, padx=60, pady=20,fg="white", bg="black")
                 mylabel.grid(row=6, columnspan=3)
@@ -518,17 +602,6 @@ delbtn = Button(root, text = 'Delete', command =delete, padx = 20, font = 35, bg
 delbtn.grid(row = 6, columnspan = 10, padx = 30, pady = 7)
 
 
-#PRINTS DATA FROM DATABSE
 
-connect = sqlite3.connect('admin.db')
-cursor = connect.cursor()
-
-cursor.execute("SELECT * FROM admin")
-result = cursor.fetchall()
-for i in result:
-    print(i)
-
-connect.commit()
-connect.close()
 
 root.mainloop()
