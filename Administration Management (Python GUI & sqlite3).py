@@ -391,28 +391,21 @@ def signup():
             if(v == "" or u ==""):
                 mylabel = Label(signuproot, text="Input values can't be NULL", font=50, padx=60, pady=20,fg="white", bg="black")
                 mylabel.grid(row=6, columnspan=3)
-            else:
-                if (str == v):
-                    unsuccesssignup()
-                    break
-                else:
-                    connect = sqlite3.connect('admin.db')
-                    cursor = connect.cursor()
 
-                    #INSERT QUERY
+            connect = sqlite3.connect('admin.db')
+            cursor = connect.cursor()
 
-                    cursor.execute("INSERT INTO admin (username, paaswo) VALUES (:username, :paaswo)",
-                                   {
-                                       'username': (username.get()).lower(),
-                                       'paaswo': (paaswo.get()).lower()
-                                   })
-                    connect.commit()
-                    connect.close()
+            # INSERT QUERY
 
-                    successsignup()
-                    signuproot.destroy()
-
-                    break
+        cursor.execute("INSERT INTO admin (username, paaswo) VALUES (:username, :paaswo)",
+                       {
+                            'username': (username.get()).lower(),
+                            'paaswo': (paaswo.get()).lower()
+                          })
+        connect.commit()
+        connect.close()
+        successsignup()
+        signuproot.destroy()
 
         username.delete(0, END)
         paaswo.delete(0, END)
